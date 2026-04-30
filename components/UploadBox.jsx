@@ -1,0 +1,181 @@
+"use client";
+
+import { useState, useRef } from "react";
+import { UploadCloud, File, X, AlertCircle } from "lucide-react";
+import { Button } from "./ui/button";
+import { Progress } from "./ui/progress";
+
+export default function UploadBox({ title, description, onProcess, processingText = "Processing..." }) {
+  const [files, setFiles] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [error, setError] = useState("");
+  const fileInputRef = useRef(null);
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    setError("");
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFiles(Array.from(e.dataTransfer.files));
+    }
+  };
+
+  const handleFileInput = (e) => {
+    setError("");
+    if (e.target.files && e.target.files.length > 0) {
+      handleFiles(Array.from(e.target.files));
+    }
+  };
+
+  const handleFiles = (newFiles) => {
+    // Only accept PDFs for now, unless specified
+    const validFiles = newFiles.filter(file => file.type === "application/pdf" || file.name.endsWith(".pdf"));
+    
+    if (validFiles.length !== newFiles.length) {
+      setError("Some files were rejected. Please upload valid PDF files.");
+    }
+    
+    setFiles((prev) => [...prev, ...validFiles]);
+  };
+
+  const removeFile = (indexToRemove) => {
+    setFiles(files.filter((_, index) => index !== indexToRemove));
+  };
+
+  const startProcessing = async () => {
+    if (files.length === 0) return;
+    
+    setIsProcessing(true);
+    setProgress(10);
+    
+    // Simulate processing steps
+    const interval = setInterval(() => {
+      setProgress(p => {
+        if (p >= 90) {
+          clearInterval(interval);
+          return 90;
+        }
+        return p + 10;
+      });
+    }, 500);
+
+    try {
+      await onProcess(files);
+      setProgress(100);
+    } catch (err) {
+      setError(err.message || "An error occurred during processing.");
+    } finally {
+      clearInterval(interval);
+      setTimeout(() => {
+        setIsProcessing(false);
+        setProgress(0);
+      }, 1000);
+    }
+  };
+
+  return (
+    <div className="w-full max-w-4xl mx-auto mt-10">
+      <div 
+        className={`border-4 border-dashed rounded-3xl p-10 text-center transition-all duration-200 ${
+          isDragging ? "border-primary bg-primary/5 scale-[1.02]" : "border-muted-foreground/20 bg-card hover:border-primary/50 hover:bg-muted/50"
+        }`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        <div className="flex flex-col items-center justify-center space-y-6">
+          <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-2">
+            <UploadCloud className="w-12 h-12 text-primary" />
+          </div>
+          
+          <div>
+            <h3 className="text-3xl font-bold mb-2">{title || "Select PDF files"}</h3>
+            <p className="text-muted-foreground text-lg mb-6">
+              {description || "Drag and drop your PDFs here"}
+            </p>
+          </div>
+
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileInput} 
+            className="hidden" 
+            multiple 
+            accept=".pdf,application/pdf"
+          />
+          
+          <Button 
+            size="lg" 
+            className="rounded-full px-12 py-8 text-xl font-semibold shadow-lg shadow-primary/25 hover:scale-105 transition-transform"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            Select PDF files
+          </Button>
+          <p className="text-sm text-muted-foreground mt-4">or drop files here</p>
+        </div>
+      </div>
+
+      {error && (
+        <div className="mt-6 p-4 bg-destructive/10 text-destructive rounded-lg flex items-center">
+          <AlertCircle className="w-5 h-5 mr-2" />
+          {error}
+        </div>
+      )}
+
+      {files.length > 0 && (
+        <div className="mt-8">
+          <h4 className="font-semibold text-lg mb-4">Selected Files ({files.length})</h4>
+          <div className="space-y-3 mb-6">
+            {files.map((file, index) => (
+              <div key={index} className="flex items-center justify-between p-4 bg-card border rounded-xl shadow-sm">
+                <div className="flex items-center space-x-4">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <File className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium truncate max-w-[200px] sm:max-w-md">{file.name}</p>
+                    <p className="text-sm text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                  </div>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => removeFile(index)} disabled={isProcessing}>
+                  <X className="w-5 h-5 text-muted-foreground hover:text-destructive" />
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          {isProcessing ? (
+            <div className="space-y-4 bg-card border rounded-xl p-6 shadow-sm">
+              <div className="flex justify-between items-center mb-2">
+                <span className="font-medium">{processingText}</span>
+                <span className="text-primary font-bold">{progress}%</span>
+              </div>
+              <Progress value={progress} className="h-3" />
+            </div>
+          ) : (
+            <div className="flex justify-center">
+              <Button 
+                size="lg" 
+                className="w-full sm:w-auto px-16 py-6 text-lg font-bold rounded-xl"
+                onClick={startProcessing}
+              >
+                {title || "Process Files"}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
