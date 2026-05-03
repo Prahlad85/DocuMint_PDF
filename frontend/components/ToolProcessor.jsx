@@ -144,7 +144,7 @@ export default function ToolProcessor({ toolType, toolInfo }) {
   // Scroll to top whenever state changes
   useEffect(() => {
     if (isProcessing || errorMsg || resultUrl) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'instant' });
     }
   }, [isProcessing, errorMsg, resultUrl]);
 
