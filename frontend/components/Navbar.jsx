@@ -1,7 +1,7 @@
 "use client";
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Menu, X, Sun, Moon, Waves, Coffee, Search } from 'lucide-react';
+import { Menu, X, Sun, Moon, Waves, Coffee, Search, Check, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LoginDialog, SignUpDialog } from '@/components/AuthDialogs';
 import { useTheme } from '@/components/ThemeProvider';
@@ -85,8 +85,11 @@ export default function Navbar() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <button onClick={() => handleNavClick('/')} className="cursor-pointer flex items-center space-x-2">
-            <span className="text-2xl font-bold text-primary">DocuMint</span>
+          <button onClick={() => handleNavClick('/')} className="cursor-pointer flex items-center space-x-2 group">
+            <div className="bg-primary p-1.5 rounded-lg group-hover:rotate-6 transition-transform">
+              <FileText className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <span className="text-2xl font-bold text-primary tracking-tight">DocuMint</span>
           </button>
 
           {/* Desktop Nav */}
@@ -113,11 +116,11 @@ export default function Navbar() {
             {/* Quick Search */}
             <button
               onClick={() => setSearchOpen(true)}
-              className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted border text-muted-foreground transition-all duration-200 mr-2"
+              className="group flex items-center gap-2 lg:w-64 px-4 py-2 rounded-xl bg-muted/50 hover:bg-muted border border-border/50 text-muted-foreground transition-all duration-300 mr-2 shadow-sm hover:shadow-md"
             >
-              <Search className="h-4 w-4 group-hover:text-primary" />
-              <span className="text-xs font-medium">Search tools...</span>
-              <kbd className="hidden lg:inline-flex h-5 select-none items-center gap-1 rounded border bg-background px-1.5 font-mono text-[10px] font-medium opacity-100">
+              <Search className="h-4 w-4 group-hover:text-primary transition-colors" />
+              <span className="text-sm font-medium">Search tools...</span>
+              <kbd className="hidden lg:inline-flex h-5 select-none items-center gap-1 rounded border bg-background px-1.5 font-mono text-[10px] font-medium opacity-50 ml-auto">
                 <span className="text-xs">⌘</span>K
               </kbd>
             </button>
@@ -142,7 +145,10 @@ export default function Navbar() {
                   {themes.map(t => (
                     <button
                       key={t.id}
-                      onClick={() => { setTheme(t.id); setThemeOpen(false); }}
+                      onClick={() => { 
+                        setTheme(t.id); 
+                        setThemeOpen(false); 
+                      }}
                       className={`cursor-pointer w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium hover:bg-muted transition-colors ${theme === t.id ? 'bg-muted' : ''}`}
                     >
                       <span
@@ -167,21 +173,27 @@ export default function Navbar() {
 
           {/* Mobile: search + theme + hamburger */}
           <div className="flex md:hidden items-center gap-2">
+            {/* Mobile Search Button - Expanded */}
             <button
               onClick={() => setSearchOpen(true)}
-              className="p-2 text-muted-foreground hover:bg-muted rounded-md transition-colors"
-              aria-label="Search"
+              className="md:hidden flex items-center gap-2 flex-1 px-3 py-1.5 rounded-lg bg-muted/50 border border-border/50 text-muted-foreground mr-2"
             >
-              <Search className="h-5 w-5" />
+              <Search className="h-4 w-4" />
+              <span className="text-xs">Search...</span>
             </button>
-            <div className="flex gap-1">
+            {/* Theme Toggle - Desktop only */}
+            <div className="hidden md:flex gap-1">
               {themes.map(t => (
                 <button
                   key={t.id}
                   onClick={() => setTheme(t.id)}
-                  className={`cursor-pointer w-5 h-5 rounded-full border transition-transform active:scale-90 ${theme === t.id ? 'ring-2 ring-primary ring-offset-2 ring-offset-background scale-110' : 'border-border'}`}
+                  className={`relative cursor-pointer w-5 h-5 rounded-full border border-border/50 flex items-center justify-center transition-none active:scale-95 ${theme === t.id ? 'scale-110 ring-2 ring-offset-1 ring-offset-background' : 'opacity-80'}`}
                   style={{ background: t.color }}
-                />
+                >
+                  {theme === t.id && (
+                    <Check className="h-3 w-3" style={{ color: t.border }} strokeWidth={4} />
+                  )}
+                </button>
               ))}
             </div>
             <button
@@ -221,6 +233,27 @@ export default function Navbar() {
             <div className="pt-4 flex flex-col gap-2">
               <LoginDialog><Button variant="ghost" className="w-full justify-start h-12">Login</Button></LoginDialog>
               <SignUpDialog><Button className="w-full justify-start h-12">Sign Up</Button></SignUpDialog>
+            </div>
+
+            {/* Mobile Theme Selection */}
+            <div className="pt-6 pb-2 border-t mt-4">
+              <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4">
+                Select Theme
+              </p>
+              <div className="flex gap-4 px-3">
+                {themes.map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => setTheme(t.id)}
+                    className={`relative cursor-pointer w-8 h-8 rounded-full border border-border flex items-center justify-center transition-none active:scale-95 ${theme === t.id ? 'scale-110 ring-2 ring-offset-2 ring-offset-background' : 'opacity-80'}`}
+                    style={{ background: t.color }}
+                  >
+                    {theme === t.id && (
+                      <Check className="h-4 w-4" style={{ color: t.border }} strokeWidth={4} />
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>

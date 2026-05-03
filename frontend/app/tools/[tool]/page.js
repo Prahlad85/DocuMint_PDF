@@ -3,6 +3,17 @@ import Footer from "@/components/Footer";
 import ToolProcessor from "@/components/ToolProcessor";
 import { notFound } from 'next/navigation';
 
+export async function generateMetadata({ params }) {
+  const { tool } = await params;
+  const toolInfo = toolsData[tool];
+  if (!toolInfo) return { title: "Tool Not Found | DocuMint" };
+  
+  return {
+    title: `${toolInfo.title} | DocuMint`,
+    description: toolInfo.description,
+  };
+}
+
 // A simple dictionary mapping slug to tool info
 const toolsData = {
   "merge-pdf": { title: "Merge PDF", description: "Combine multiple PDFs into one unified document." },

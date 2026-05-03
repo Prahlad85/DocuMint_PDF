@@ -1,12 +1,14 @@
 "use client";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ToolCard from "@/components/ToolCard";
+import { toast } from "sonner";
 import { 
   FileText, Merge, Split, FileArchive, FileDown, 
   FileUp, Image, PenTool, Edit3, Shield, 
   Unlock, Type, AlignLeft, Bot, Languages, 
-  Layers, Settings, Search, EyeOff, Crop
+  Layers, Settings, Search, EyeOff, Crop, Download
 } from "lucide-react";
 
 const tools = [
@@ -42,6 +44,37 @@ const tools = [
 ];
 
 export default function Home() {
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstall = () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === "accepted") {
+          console.log("User accepted the install prompt");
+        }
+        setDeferredPrompt(null);
+      });
+    } else {
+      // For iOS or cases where prompt isn't supported yet
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      if (isIOS) {
+        toast.info("To install on iOS: Tap 'Share' and then 'Add to Home Screen'");
+      } else {
+        toast.info("Install option is available in your browser menu");
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -62,9 +95,13 @@ export default function Home() {
               <a href="#tools" className="px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/20 text-lg">
                 Explore All Tools
               </a>
-              <a href="/tools/merge-pdf" className="px-8 py-4 bg-secondary text-secondary-foreground font-semibold rounded-xl hover:bg-secondary/80 transition text-lg">
-                Try Merge PDF
-              </a>
+              <button 
+                onClick={handleInstall}
+                className="flex items-center gap-2 px-8 py-4 bg-secondary text-secondary-foreground font-semibold rounded-xl hover:bg-secondary/80 transition text-lg shadow-md"
+              >
+                <Download className="h-5 w-5" />
+                Add to Home Screen
+              </button>
             </div>
           </div>
         </section>

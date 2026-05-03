@@ -1,5 +1,6 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
+import { Toaster } from "sonner";
 
 const ThemeContext = createContext({ theme: "light", setTheme: () => {} });
 
@@ -42,10 +43,19 @@ export function ThemeProvider({ children }) {
     applyTheme(t);
   };
 
+  // Determine sonner theme
+  const sonnerTheme = theme === "dark" || theme === "blue-gray" ? "dark" : "light";
+
   // Always render children — avoid flash of unstyled content
   return (
     <ThemeContext.Provider value={{ theme: mounted ? theme : "light", setTheme }}>
       {children}
+      <Toaster 
+        theme={mounted ? sonnerTheme : "light"} 
+        position="bottom-right" 
+        richColors 
+        closeButton 
+      />
     </ThemeContext.Provider>
   );
 }

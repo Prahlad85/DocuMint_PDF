@@ -28,9 +28,25 @@ const tools = [
 
 export default function CommandSearch({ open, setOpen }) {
   const [query, setQuery] = useState("");
+  const [recentTools, setRecentTools] = useState([]);
   const router = useRouter();
 
   useEffect(() => {
+    // Load recent tool hrefs from local storage
+    const saved = localStorage.getItem("dm-recent-hrefs");
+    if (saved) {
+      try {
+        const hrefs = JSON.parse(saved);
+        // Map hrefs back to tool objects to get icons/titles
+        const mapped = hrefs
+          .map(href => tools.find(t => t.href === href))
+          .filter(Boolean);
+        setRecentTools(mapped);
+      } catch (e) {
+        console.error("Failed to parse recent tools", e);
+      }
+    }
+
     const down = (e) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
@@ -42,16 +58,31 @@ export default function CommandSearch({ open, setOpen }) {
   }, [setOpen]);
 
   const filteredTools = query === "" 
-    ? tools.slice(0, 6) 
+    ? (recentTools.length > 0 ? recentTools.slice(0, 4) : tools.slice(0, 6)) 
     : tools.filter((tool) => 
         tool.title.toLowerCase().includes(query.toLowerCase()) || 
         tool.category.toLowerCase().includes(query.toLowerCase())
       );
 
-  const handleSelect = (href) => {
+  const handleSelect = (tool) => {
+    // Save to recent tools (just the href to avoid serialization issues)
+    const updatedHrefs = [
+      tool.href,
+      ...recentTools.filter(t => t.href !== tool.href).map(t => t.href)
+    ].slice(0, 5);
+    
+    localStorage.setItem("dm-recent-hrefs", JSON.stringify(updatedHrefs));
+
+    // Update state with full objects
+    const updatedTools = [
+      tool,
+      ...recentTools.filter(t => t.href !== tool.href)
+    ].slice(0, 5);
+    setRecentTools(updatedTools);
+
     setOpen(false);
     setQuery("");
-    router.push(href);
+    router.push(tool.href);
   };
 
   return (
@@ -72,26 +103,29 @@ export default function CommandSearch({ open, setOpen }) {
           {filteredTools.length > 0 ? (
             <div className="space-y-1">
               <div className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                {query ? "Search Results" : "Suggested Tools"}
+                {query ? "Search Results" : (recentTools.length > 0 ? "Recently Used" : "Suggested Tools")}
               </div>
-              {filteredTools.map((tool) => (
-                <button
-                  key={tool.href}
-                  onClick={() => handleSelect(tool.href)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted transition-colors text-left group"
-                >
-                  <div className="p-2 rounded-md bg-muted group-hover:bg-background transition-colors">
-                    <tool.icon className="h-4 w-4 text-primary" />
-                  </div>
-                  <div className="flex-1 overflow-hidden">
-                    <div className="text-sm font-medium truncate">{tool.title}</div>
-                    <div className="text-[10px] text-muted-foreground">{tool.category}</div>
-                  </div>
-                  <div className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
-                    Open →
-                  </div>
-                </button>
-              ))}
+              {filteredTools.map((tool) => {
+                const ToolIcon = tool.icon || Search; // Handle icon serialization
+                return (
+                  <button
+                    key={tool.href}
+                    onClick={() => handleSelect(tool)}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted transition-colors text-left group"
+                  >
+                    <div className="p-2 rounded-md bg-muted group-hover:bg-background transition-colors">
+                      <ToolIcon className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex-1 overflow-hidden">
+                      <div className="text-sm font-medium truncate">{tool.title}</div>
+                      <div className="text-[10px] text-muted-foreground">{tool.category}</div>
+                    </div>
+                    <div className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                      Open →
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           ) : (
             <div className="py-10 text-center">
