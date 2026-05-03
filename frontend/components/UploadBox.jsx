@@ -5,7 +5,10 @@ import { UploadCloud, File, X, AlertCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import { Progress } from "./ui/progress";
 
-export default function UploadBox({ title, description, onProcess, processingText = "Processing..." }) {
+export default function UploadBox({ title, description, onProcess, processingText = "Processing...", acceptTypes }) {
+  // acceptTypes: e.g. "image/*" or ".pdf,application/pdf" — defaults to PDF only
+  const accept = acceptTypes || ".pdf,application/pdf";
+  const isPdfOnly = !acceptTypes || acceptTypes.includes('pdf');
   const [files, setFiles] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -39,13 +42,13 @@ export default function UploadBox({ title, description, onProcess, processingTex
   };
 
   const handleFiles = (newFiles) => {
-    // Only accept PDFs for now, unless specified
-    const validFiles = newFiles.filter(file => file.type === "application/pdf" || file.name.endsWith(".pdf"));
-    
-    if (validFiles.length !== newFiles.length) {
-      setError("Some files were rejected. Please upload valid PDF files.");
+    let validFiles = newFiles;
+    if (isPdfOnly) {
+      validFiles = newFiles.filter(f => f.type === 'application/pdf' || f.name.endsWith('.pdf'));
+      if (validFiles.length !== newFiles.length) {
+        setError('Some files were rejected. Please upload valid PDF files.');
+      }
     }
-    
     setFiles((prev) => [...prev, ...validFiles]);
   };
 
@@ -112,7 +115,7 @@ export default function UploadBox({ title, description, onProcess, processingTex
             onChange={handleFileInput} 
             className="hidden" 
             multiple 
-            accept=".pdf,application/pdf"
+            accept={accept}
           />
           
           <Button 
@@ -135,7 +138,19 @@ export default function UploadBox({ title, description, onProcess, processingTex
 
       {files.length > 0 && (
         <div className="mt-8">
-          <h4 className="font-semibold text-lg mb-4">Selected Files ({files.length})</h4>
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="font-semibold text-lg">Selected Files ({files.length})</h4>
+            {!isProcessing && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full px-4 gap-2 border-dashed border-primary/50 text-primary hover:bg-primary/10"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <span className="text-lg leading-none">+</span> Add More Files
+              </Button>
+            )}
+          </div>
           <div className="space-y-3 mb-6">
             {files.map((file, index) => (
               <div key={index} className="flex items-center justify-between p-4 bg-card border rounded-xl shadow-sm">
@@ -164,7 +179,7 @@ export default function UploadBox({ title, description, onProcess, processingTex
               <Progress value={progress} className="h-3" />
             </div>
           ) : (
-            <div className="flex justify-center">
+            <div className="flex flex-col sm:flex-row justify-center gap-3">
               <Button 
                 size="lg" 
                 className="w-full sm:w-auto px-16 py-6 text-lg font-bold rounded-xl"
