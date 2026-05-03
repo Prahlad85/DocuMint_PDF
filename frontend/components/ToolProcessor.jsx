@@ -71,11 +71,14 @@ export default function ToolProcessor({ toolType, toolInfo }) {
 
 
       if (!response.ok) {
-        let errMsg = 'Server processing failed. Please ensure the backend server is running.';
+        let errMsg = `Server error (${response.status})`;
         try {
           const errData = await response.json();
           errMsg = errData.error || errMsg;
-        } catch {}
+        } catch {
+          // non-JSON error body
+          errMsg = `HTTP ${response.status} — ${response.statusText || 'Backend request failed'}`;
+        }
         throw new Error(errMsg);
       }
 
