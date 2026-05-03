@@ -26,7 +26,11 @@ export default function Navbar() {
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) setIsOpen(false);
+      // Don't close if clicking inside the menu or on a dialog/portal
+      if (menuRef.current && menuRef.current.contains(e.target)) return;
+      if (e.target.closest('[role="dialog"]') || e.target.closest('[data-radix-portal]')) return;
+      
+      setIsOpen(false);
     };
     document.addEventListener('mousedown', handler);
     document.addEventListener('touchstart', handler);
@@ -40,7 +44,10 @@ export default function Navbar() {
   useEffect(() => {
     if (!themeOpen) return;
     const handler = (e) => {
-      if (themeRef.current && !themeRef.current.contains(e.target)) setThemeOpen(false);
+      if (themeRef.current && !themeRef.current.contains(e.target)) {
+        if (e.target.closest('[role="dialog"]') || e.target.closest('[data-radix-portal]')) return;
+        setThemeOpen(false);
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
