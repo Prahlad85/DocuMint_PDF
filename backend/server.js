@@ -9,7 +9,22 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://docu2mint.vercel.app',
+  /\.vercel\.app$/,   // any Vercel preview URL
+];
+app.use(cors({
+  origin: (origin, callback) => {
+    // allow non-browser requests (e.g. Postman) and allowed origins
+    if (!origin) return callback(null, true);
+    const isAllowed = allowedOrigins.some(o =>
+      typeof o === 'string' ? o === origin : o.test(origin)
+    );
+    callback(isAllowed ? null : new Error('CORS blocked: ' + origin), isAllowed);
+  },
+  credentials: true,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

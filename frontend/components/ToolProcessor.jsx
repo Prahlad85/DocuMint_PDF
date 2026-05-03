@@ -27,6 +27,8 @@ export default function ToolProcessor({ toolType, toolInfo }) {
         formData.append(key, typeof value === 'object' ? JSON.stringify(value) : value);
       });
 
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+
       const apiRoutes = {
         'merge-pdf': '/api/merge',
         'split-pdf': '/api/split',
@@ -60,11 +62,13 @@ export default function ToolProcessor({ toolType, toolInfo }) {
       };
 
       const endpoint = apiRoutes[toolType] || `/api/${toolType.replace('-pdf', '')}`;
+      const fullUrl = `${API_BASE}${endpoint}`;
 
-      const response = await fetch(endpoint, {
+      const response = await fetch(fullUrl, {
         method: 'POST',
         body: formData,
       });
+
 
       if (!response.ok) {
         let errMsg = 'Server processing failed. Please ensure the backend server is running.';
