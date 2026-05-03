@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Download, CheckCircle, Loader2, AlertCircle } from "lucide-react";
 import UploadBox from "./UploadBox";
@@ -141,15 +141,22 @@ export default function ToolProcessor({ toolType, toolInfo }) {
 
   // ── Render States (strict priority order) ──────────────────────────────────
 
+  // Scroll to top whenever state changes
+  useEffect(() => {
+    if (isProcessing || errorMsg || resultUrl) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [isProcessing, errorMsg, resultUrl]);
+
   // 1. Processing spinner — shown during API call
   if (isProcessing) {
     return (
-      <div className="max-w-3xl mx-auto mt-10 bg-card border rounded-3xl p-12 text-center shadow-lg">
-        <div className="flex justify-center mb-6 text-primary">
-          <Loader2 className="w-16 h-16 animate-spin" />
+      <div className="max-w-lg mx-auto mt-4 bg-card border rounded-2xl p-6 text-center shadow-md">
+        <div className="flex justify-center mb-4 text-primary">
+          <Loader2 className="w-10 h-10 animate-spin" />
         </div>
-        <h2 className="text-3xl font-bold mb-4">Processing...</h2>
-        <p className="text-muted-foreground text-lg">
+        <h2 className="text-xl font-bold mb-2">Processing...</h2>
+        <p className="text-muted-foreground text-sm">
           Please wait while we process your document.
         </p>
       </div>
@@ -159,13 +166,13 @@ export default function ToolProcessor({ toolType, toolInfo }) {
   // 2. Error state — backend failed or network issue
   if (errorMsg) {
     return (
-      <div className="max-w-3xl mx-auto mt-10 bg-card border rounded-3xl p-12 text-center shadow-lg">
-        <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
-          <AlertCircle className="w-10 h-10" />
+      <div className="max-w-lg mx-auto mt-4 bg-card border rounded-2xl p-6 text-center shadow-md">
+        <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <AlertCircle className="w-6 h-6" />
         </div>
-        <h2 className="text-3xl font-bold mb-4">Processing Failed</h2>
-        <p className="text-muted-foreground text-lg mb-8">{errorMsg}</p>
-        <Button size="lg" className="rounded-full px-10 py-6 text-lg font-semibold" onClick={resetAll}>
+        <h2 className="text-xl font-bold mb-2">Processing Failed</h2>
+        <p className="text-muted-foreground text-sm mb-5">{errorMsg}</p>
+        <Button size="sm" className="rounded-full px-6 font-semibold" onClick={resetAll}>
           Try Again
         </Button>
       </div>
@@ -175,34 +182,34 @@ export default function ToolProcessor({ toolType, toolInfo }) {
   // 3. Success / Download screen
   if (resultUrl) {
     return (
-      <div className="max-w-3xl mx-auto mt-10 bg-card border rounded-3xl p-12 text-center shadow-lg">
-        <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-          <CheckCircle className="w-10 h-10" />
+      <div className="max-w-lg mx-auto mt-4 bg-card border rounded-2xl p-6 text-center shadow-md">
+        <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <CheckCircle className="w-6 h-6" />
         </div>
-        <h2 className="text-3xl font-bold mb-4">Task Complete!</h2>
-        <p className="text-muted-foreground text-lg mb-8">
+        <h2 className="text-xl font-bold mb-2">Task Complete!</h2>
+        <p className="text-muted-foreground text-sm mb-5">
           Your document has been successfully processed.
         </p>
-        <div className="flex flex-col sm:flex-row justify-center gap-4 flex-wrap">
+        <div className="flex flex-col sm:flex-row justify-center gap-3 flex-wrap">
           <a href={resultUrl} download={resultName}>
-            <Button size="lg" className="rounded-full px-10 py-6 text-lg font-semibold w-full sm:w-auto">
-              <Download className="mr-2 h-5 w-5" /> Download File
+            <Button size="sm" className="rounded-full px-6 font-semibold w-full sm:w-auto">
+              <Download className="mr-2 h-4 w-4" /> Download File
             </Button>
           </a>
           {toolType === 'merge-pdf' && (
             <Button
               variant="outline"
-              size="lg"
-              className="rounded-full px-10 py-6 text-lg font-semibold w-full sm:w-auto border-primary/50 text-primary hover:bg-primary/10"
+              size="sm"
+              className="rounded-full px-6 font-semibold w-full sm:w-auto border-primary/50 text-primary hover:bg-primary/10"
               onClick={addMoreAndMerge}
             >
-              <span className="text-xl leading-none mr-2">+</span> Add More Files
+              <span className="text-base leading-none mr-1">+</span> Add More Files
             </Button>
           )}
           <Button
             variant="outline"
-            size="lg"
-            className="rounded-full px-10 py-6 text-lg font-semibold w-full sm:w-auto"
+            size="sm"
+            className="rounded-full px-6 font-semibold w-full sm:w-auto"
             onClick={resetAll}
           >
             Process More Files

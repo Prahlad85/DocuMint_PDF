@@ -88,23 +88,23 @@ export default function UploadBox({ title, description, onProcess, processingTex
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto mt-10">
+    <div className="w-full max-w-2xl mx-auto mt-6">
       <div 
-        className={`border-4 border-dashed rounded-3xl p-10 text-center transition-all duration-200 ${
-          isDragging ? "border-primary bg-primary/5 scale-[1.02]" : "border-muted-foreground/20 bg-card hover:border-primary/50 hover:bg-muted/50"
+        className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all duration-200 ${
+          isDragging ? "border-primary bg-primary/5 scale-[1.01]" : "border-muted-foreground/20 bg-card hover:border-primary/50 hover:bg-muted/50"
         }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        <div className="flex flex-col items-center justify-center space-y-6">
-          <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-2">
-            <UploadCloud className="w-12 h-12 text-primary" />
+        <div className="flex flex-col items-center justify-center space-y-3">
+          <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center">
+            <UploadCloud className="w-7 h-7 text-primary" />
           </div>
           
           <div>
-            <h3 className="text-3xl font-bold mb-2">{title || "Select PDF files"}</h3>
-            <p className="text-muted-foreground text-lg mb-6">
+            <h3 className="text-xl font-bold mb-1">{title || "Select PDF files"}</h3>
+            <p className="text-muted-foreground text-sm">
               {description || "Drag and drop your PDFs here"}
             </p>
           </div>
@@ -119,13 +119,13 @@ export default function UploadBox({ title, description, onProcess, processingTex
           />
           
           <Button 
-            size="lg" 
-            className="rounded-full px-12 py-8 text-xl font-semibold shadow-lg shadow-primary/25 hover:scale-105 transition-transform"
+            size="default" 
+            className="rounded-full px-8 py-2 text-sm font-semibold shadow-md shadow-primary/20 hover:scale-105 transition-transform"
             onClick={() => fileInputRef.current?.click()}
           >
             Select PDF files
           </Button>
-          <p className="text-sm text-muted-foreground mt-4">or drop files here</p>
+          <p className="text-xs text-muted-foreground">or drop files here</p>
         </div>
       </div>
 
