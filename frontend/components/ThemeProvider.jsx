@@ -12,10 +12,28 @@ export function ThemeProvider({ children }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("dm-theme") || "light";
-    setThemeState(stored);
-    applyTheme(stored);
+    const stored = localStorage.getItem("dm-theme");
+    if (stored) {
+      setThemeState(stored);
+      applyTheme(stored);
+    } else {
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      setThemeState(systemTheme);
+      applyTheme(systemTheme);
+    }
     setMounted(true);
+
+    // Listen for system theme changes
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (e) => {
+      if (!localStorage.getItem("dm-theme")) {
+        const newTheme = e.matches ? "dark" : "light";
+        setThemeState(newTheme);
+        applyTheme(newTheme);
+      }
+    };
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
   const setTheme = (t) => {

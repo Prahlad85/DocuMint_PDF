@@ -1,10 +1,11 @@
 "use client";
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Menu, X, Sun, Moon, Waves, Coffee } from 'lucide-react';
+import { Menu, X, Sun, Moon, Waves, Coffee, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LoginDialog, SignUpDialog } from '@/components/AuthDialogs';
 import { useTheme } from '@/components/ThemeProvider';
+import CommandSearch from '@/components/CommandSearch';
 
 const themes = [
   { id: "light",     label: "Light",     icon: Sun,    color: "#ffffff", border: "#d1d5db" },
@@ -16,6 +17,12 @@ const themes = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const lastTouchTime = useRef(0);
   const menuRef = useRef(null);
   const themeRef = useRef(null);
@@ -103,6 +110,18 @@ export default function Navbar() {
 
           {/* Desktop Right */}
           <div className="hidden md:flex items-center gap-2">
+            {/* Quick Search */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted border text-muted-foreground transition-all duration-200 mr-2"
+            >
+              <Search className="h-4 w-4 group-hover:text-primary" />
+              <span className="text-xs font-medium">Search tools...</span>
+              <kbd className="hidden lg:inline-flex h-5 select-none items-center gap-1 rounded border bg-background px-1.5 font-mono text-[10px] font-medium opacity-100">
+                <span className="text-xs">⌘</span>K
+              </kbd>
+            </button>
+
             {/* Theme Toggle */}
             <div ref={themeRef} className="relative">
               <button
@@ -111,10 +130,12 @@ export default function Navbar() {
                 title="Switch theme"
               >
                 <span
-                  className="w-3 h-3 rounded-full border inline-block"
-                  style={{ background: currentTheme.color, borderColor: currentTheme.border }}
+                  className="w-3 h-3 rounded-full border inline-block transition-colors"
+                  style={{ background: mounted ? currentTheme.color : 'transparent', borderColor: mounted ? currentTheme.border : 'transparent' }}
                 />
-                {currentTheme.label}
+                <span className={mounted ? "opacity-100" : "opacity-0 transition-none"}>
+                  {mounted ? currentTheme.label : "Theme"}
+                </span>
               </button>
               {themeOpen && (
                 <div className="absolute right-0 top-10 bg-popover border rounded-xl shadow-lg p-1 min-w-[130px] z-50 animate-in fade-in zoom-in-95 duration-100">
@@ -144,8 +165,15 @@ export default function Navbar() {
             </SignUpDialog>
           </div>
 
-          {/* Mobile: theme + hamburger */}
+          {/* Mobile: search + theme + hamburger */}
           <div className="flex md:hidden items-center gap-2">
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="p-2 text-muted-foreground hover:bg-muted rounded-md transition-colors"
+              aria-label="Search"
+            >
+              <Search className="h-5 w-5" />
+            </button>
             <div className="flex gap-1">
               {themes.map(t => (
                 <button
@@ -197,6 +225,8 @@ export default function Navbar() {
           </div>
         </div>
       )}
+      {/* Command Palette */}
+      <CommandSearch open={searchOpen} setOpen={setSearchOpen} />
     </nav>
   );
 }

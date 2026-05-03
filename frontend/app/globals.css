@@ -172,10 +172,28 @@ html[data-theme="yellow"] {
 
   body {
     @apply bg-background text-foreground;
-    transition: background-color 0.25s ease, color 0.2s ease;
+    transition: none !important;
   }
 
   html {
     @apply font-sans;
   }
+}
+
+/* Slick Scrollbar for Search Results */
+.slick-scrollbar::-webkit-scrollbar {
+  width: 3px;
+}
+.slick-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.slick-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(155, 155, 155, 0.2);
+  border-radius: 20px;
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+.slick-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(155, 155, 155, 0.4);
+  background-clip: content-box;
 }

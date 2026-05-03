@@ -31,7 +31,10 @@ export default function RootLayout({ children }) {
             __html: `
               (function() {
                 try {
-                  var theme = localStorage.getItem('dm-theme') || 'light';
+                  var theme = localStorage.getItem('dm-theme');
+                  if (!theme) {
+                    theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                  }
                   document.documentElement.setAttribute('data-theme', theme);
                 } catch (e) {}
               })()
